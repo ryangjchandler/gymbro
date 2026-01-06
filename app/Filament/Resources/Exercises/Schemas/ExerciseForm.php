@@ -6,6 +6,7 @@ use App\Filament\Admin\Fields\ExerciseTypeSelect;
 use App\Filament\Admin\Fields\MuscleGroupSelect;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -24,6 +25,9 @@ class ExerciseForm
                             ->required(),
                         ExerciseTypeSelect::make()
                             ->required(),
+                        Toggle::make('is_pinned')
+                            ->label('Pin to Dashboard')
+                            ->helperText('Pinned exercises appear in the Estimated 1RM widget'),
                         Textarea::make('instructions')
                             ->rows(4)
                             ->columnSpanFull(),

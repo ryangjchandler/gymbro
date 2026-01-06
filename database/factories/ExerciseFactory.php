@@ -17,6 +17,7 @@ class ExerciseFactory extends Factory
             'name' => fake()->unique()->words(2, true),
             'muscle_group' => fake()->randomElement(MuscleGroup::cases()),
             'type' => ExerciseType::Strength,
+            'is_pinned' => false,
             'instructions' => null,
         ];
     }
@@ -47,6 +48,13 @@ class ExerciseFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'muscle_group' => $muscleGroup,
+        ]);
+    }
+
+    public function pinned(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_pinned' => true,
         ]);
     }
 }

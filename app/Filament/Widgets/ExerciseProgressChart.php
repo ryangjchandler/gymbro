@@ -66,6 +66,15 @@ class ExerciseProgressChart extends ChartWidget
             ];
         }
 
+        $exercise = Exercise::find($exerciseId);
+
+        if (! $exercise) {
+            return [
+                'datasets' => [],
+                'labels' => [],
+            ];
+        }
+
         $query = WorkoutSet::query()
             ->where('exercise_id', $exerciseId)
             ->where('is_warmup', false)
@@ -97,18 +106,40 @@ class ExerciseProgressChart extends ChartWidget
             ->map(fn ($daySets) => (float) $daySets->max('weight_kg'))
             ->sortKeys();
 
-        return [
-            'datasets' => [
-                [
-                    'label' => 'Max Weight (kg)',
-                    'data' => $data->values()->toArray(),
-                    'borderColor' => '#f59e0b',
-                    'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.3,
-                ],
+        $labels = $data->keys()->map(fn ($date) => Carbon::parse($date)->format('M j'))->toArray();
+        $weights = $data->values()->toArray();
+
+        $datasets = [
+            [
+                'label' => 'Max Weight (kg)',
+                'data' => $weights,
+                'borderColor' => '#f59e0b',
+                'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
+                'fill' => true,
+                'tension' => 0.3,
             ],
-            'labels' => $data->keys()->map(fn ($date) => Carbon::parse($date)->format('M j'))->toArray(),
+        ];
+
+        // Add estimated 1RM reference line if available
+        $estimated1rm = $exercise->getEstimated1rm();
+
+        if ($estimated1rm && count($labels) > 0) {
+            $estimated1rmValue = $estimated1rm['estimated_1rm'];
+
+            $datasets[] = [
+                'label' => 'Est. 1RM ('.$estimated1rmValue.'kg)',
+                'data' => array_fill(0, count($labels), $estimated1rmValue),
+                'borderColor' => '#10b981',
+                'borderDash' => [5, 5],
+                'borderWidth' => 2,
+                'pointRadius' => 0,
+                'fill' => false,
+            ];
+        }
+
+        return [
+            'datasets' => $datasets,
+            'labels' => $labels,
         ];
     }
 
@@ -132,7 +163,9 @@ class ExerciseProgressChart extends ChartWidget
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            label: (context) => context.parsed.y + ' kg',
+                            label: (context) => context.dataset.label.includes('1RM') 
+                                ? context.dataset.label 
+                                : context.parsed.y + ' kg',
                         },
                     },
                 },
