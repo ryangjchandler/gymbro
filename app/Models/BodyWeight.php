@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\AchievementService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,13 @@ use Illuminate\Support\Facades\Storage;
 class BodyWeight extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::created(function () {
+            app(AchievementService::class)->checkAndUnlockAll();
+        });
+    }
 
     protected function casts(): array
     {
