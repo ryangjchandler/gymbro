@@ -5,5 +5,7 @@
     "editors": [
         "opencode"
     ],
-    "guidelines": []
+    "guidelines": [
+        "filament/filament"
+    ]
 }
